@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.4.1)
 
 # 存放生成 so 库的目录
-# set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/libs/${ANDROID_ABI})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/libs/${ANDROID_ABI})
 
 # 配置 so 库信息
 add_library(
