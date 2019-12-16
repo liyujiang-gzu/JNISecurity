@@ -134,7 +134,7 @@ int decodeFileData(int b) {
  */
 extern "C"
 JNIEXPORT jint JNICALL
-fileEncrypt(JNIEnv *env, jobject, jstring sourcePath, jstring filePath) {
+fileEncrypt(JNIEnv *env, jclass, jstring sourcePath, jstring filePath) {
 
     //将jstring转化为普通的字符串
     const char *SPath = env->GetStringUTFChars(sourcePath, JNI_FALSE);
@@ -173,7 +173,7 @@ fileEncrypt(JNIEnv *env, jobject, jstring sourcePath, jstring filePath) {
  * @return
  */
 JNIEXPORT jint JNICALL
-fileDecrypt(JNIEnv *env, jobject, jstring sourceFile, jstring file) {
+fileDecrypt(JNIEnv *env, jclass, jstring sourceFile, jstring file) {
 
     const char *SFILE = env->GetStringUTFChars(sourceFile, JNI_FALSE);
     const char *PFILE = env->GetStringUTFChars(file, JNI_FALSE);
@@ -211,7 +211,7 @@ fileDecrypt(JNIEnv *env, jobject, jstring sourceFile, jstring file) {
  * @return
  */
 JNIEXPORT jint JNICALL
-fileDivision(JNIEnv *env, jobject, jstring filePath, jstring path, jint count) {
+fileDivision(JNIEnv *env, jclass, jstring filePath, jstring path, jint count) {
 
 
     //获取到地址
@@ -273,7 +273,7 @@ fileDivision(JNIEnv *env, jobject, jstring filePath, jstring path, jint count) {
  * @return
  */
 JNIEXPORT jint JNICALL
-fileMerge(JNIEnv *env, jobject, jstring sourcePath, jobjectArray paths) {
+fileMerge(JNIEnv *env, jclass, jstring sourcePath, jobjectArray paths) {
 
     const char *SOURCE_PATH = env->GetStringUTFChars(sourcePath, JNI_FALSE);
 
