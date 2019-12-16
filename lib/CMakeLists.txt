@@ -7,8 +7,7 @@ cmake_minimum_required(VERSION 3.4.1)
 # 配置 so 库信息
 add_library(
 
-        # 生成的 so 库名称，此处生成的 so 文件名称是libKey.so
-        #Key
+        # 生成的 so 库名称
         liyujiang
 
         # STATIC：静态库，是目标文件的归档文件，在链接其它目标的时候使用
@@ -26,11 +25,10 @@ find_library(
         log-lib
         log)
 
-# 关联 log 库到本地库。如果你本地的库（DecryptKey）想要调用log库的方法，那么就需要配置这个属性
+# 关联 log 库到本地库。如果你本地的库想要调用log库的方法，那么就需要配置这个属性
 target_link_libraries(
 
         # 目标库
-        #Key
         liyujiang
 
         # 依赖库
