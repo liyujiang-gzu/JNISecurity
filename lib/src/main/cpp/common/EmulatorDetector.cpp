@@ -7,15 +7,16 @@
 #include <cstring>
 #include <cstdlib>
 #include <cstdio>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <jni.h>
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
-#include <jni.h>
-#include <sys/stat.h>
-#include<dirent.h>
 #include "log.h"
+#include "config.h"
 #include "CommonUtils.h"
-#include "unistd.h"
-#include "emulator_detector.h"
+#include "EmulatorDetector.h"
 
 /**
  * 模拟器检测
@@ -42,13 +43,13 @@ std::string detectEmulator(JNIEnv *env, std::string result) {
  */
 bool is_special_emulator() {
     const char *filePath[] = {
-            "/system/bin/nemuVM-prop", //网易.MuMu模拟器
-            "/system/bin/androVM-prop", //Genymotion、腾讯手游助手
-            "/system/bin/ttVM-prop", //天天模拟器
-            "/system/bin/3btrans", //51模拟器、蓝叠模拟器
-            "/system/bin/droid4x-prop", //海马模拟器
-            "/ueventd.nox.rc", //夜神模拟器(Windows)
-            "/init.nox.rc", //夜神模拟器(MAC)
+        "/system/bin/nemuVM-prop", //网易.MuMu模拟器
+        "/system/bin/androVM-prop", //Genymotion、腾讯手游助手
+        "/system/bin/ttVM-prop", //天天模拟器
+        "/system/bin/3btrans", //51模拟器、蓝叠模拟器
+        "/system/bin/droid4x-prop", //海马模拟器
+        "/ueventd.nox.rc", //夜神模拟器(Windows)
+        "/init.nox.rc", //夜神模拟器(MAC)
     };
     int len = sizeof(filePath) / sizeof(filePath[0]);
     for (int i = 0; i < len; ++i) {

@@ -4,8 +4,9 @@
 
 #include <string>
 #include <jni.h>
-#include "CommonUtils.h"
 #include "log.h"
+#include "config.h"
+#include "CommonUtils.h"
 
 int registerNativeMethods(JNIEnv *env, const char *className, JNINativeMethod *getMethods,
                           int methodsNum) {

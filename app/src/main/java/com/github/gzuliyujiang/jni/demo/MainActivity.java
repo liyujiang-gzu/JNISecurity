@@ -25,30 +25,24 @@ public class MainActivity extends AppCompatActivity {
         checkPermission();
         setContentView(R.layout.activity_main);
         TextView textView = findViewById(R.id.value);
-        Log.w(TAG, JNISecurity.getSign(this));
         boolean flag = JNISecurity.verify();
-        Log.w("lyj-java", String.valueOf(flag));
+        Log.w(TAG, String.valueOf(flag));
         String key = JNISecurity.getKey();
-        Log.w("lyj-java", key);
+        Log.w(TAG, key);
         textView.setText(String.format("%s\n%s\n\n", flag, key));
         String result = JNISecurity.getEncodeDeviceInfo();
         textView.append(result);
-        Log.w("lyj-java", result);
-        String terminalID = JNISecurity.md5(result);
-        textView.append("\n\n" + terminalID);
-        Log.w("lyj-java", terminalID);
+        Log.w(TAG, result);
     }
 
     private void checkPermission() {
         int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if (permission != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(
-                    this,
-                    new String[]{
-                            Manifest.permission.READ_EXTERNAL_STORAGE,
-                            Manifest.permission.WRITE_EXTERNAL_STORAGE
-                    },
-                    REQUEST_EXTERNAL_STORAGE
+                this, new String[]{
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                }, REQUEST_EXTERNAL_STORAGE
             );
         }
     }

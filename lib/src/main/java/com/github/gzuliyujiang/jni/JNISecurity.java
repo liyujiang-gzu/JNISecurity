@@ -5,18 +5,17 @@ import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.Signature;
 import android.content.res.AssetManager;
 import android.os.Build;
 import android.os.Environment;
 
 import java.io.File;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 /**
  * 私密数据存储部分：用来获取解密秘钥，内含签名防盗机制
  * 文件加密解密部分：用来加密解密、切割合并文件
+ * 设备唯一标识部分：用来标记唯一的用户终端设备
  */
 public class JNISecurity {
     private static boolean hasInit = false;
@@ -80,7 +79,7 @@ public class JNISecurity {
         try {
             PackageManager packageManager = context.getPackageManager();
             PackageInfo packageInfo = packageManager.getPackageInfo(
-                    context.getPackageName(), 0);
+                context.getPackageName(), 0);
             int labelRes = packageInfo.applicationInfo.labelRes;
             return context.getResources().getString(labelRes);
         } catch (Exception e) {
@@ -99,8 +98,8 @@ public class JNISecurity {
                 stringBuilder.append(Integer.toHexString(b & 15));
             }
             return stringBuilder.toString();
-        } catch (NoSuchAlgorithmException e) {
-            return "";
+        } catch (Exception e) {
+            return "Exception";
         }
     }
 
@@ -119,21 +118,6 @@ public class JNISecurity {
     public static native String getKey();
 
     /**
-     * 获取应用签名，获取签名后替换 cpp 的 SIGNATURE_KEY 常量
-     */
-    public static String getSign(Context context) {
-        String pkgName = context.getApplicationContext().getPackageName();
-        try {
-            @SuppressLint("PackageManagerGetSignatures")
-            PackageInfo packageInfo = context.getPackageManager().getPackageInfo(pkgName, PackageManager.GET_SIGNATURES);
-            Signature[] signatures = packageInfo.signatures;
-            return signatures[0].toCharsString();
-        } catch (Exception ignore) {
-        }
-        return "";
-    }
-
-    /**
      * 文件加密
      */
     public static native int fileEncrypt(String sourcePath, String filePath);
@@ -143,7 +127,6 @@ public class JNISecurity {
      * 文件解密
      */
     public static native int fileDecrypt(String sourcePath, String filePath);
-
 
     /**
      * 文件分割

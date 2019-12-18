@@ -6,12 +6,15 @@
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
 #include <android/configuration.h>
-#include "util/log.h"
-#include "util/CommonUtils.h"
-#include "util/CBase64Coder.h"
-#include "util/emulator_detector.h"
+#include "common/config.h"
+#include "common/log.h"
+#include "common/CommonUtils.h"
+#include "common/CBase64Coder.h"
+#include "common/EmulatorDetector.h"
 #include "json/CJsonObject.hpp"
 
+// 对应的 Java 类
+const char *JNI_CLASS_PATH = "com/github/gzuliyujiang/jni/JNISecurity";
 // 需要被验证应用的包名
 const char *APP_PACKAGE_NAME = "com.github.gzuliyujiang.jni.demo";
 // 应用签名，注意开发版和发布版的区别，发布版需要使用正式签名打包后获取
@@ -255,8 +258,7 @@ get_sign_id(JNIEnv *env, jobject mContext) {
                                            "[Landroid/content/pm/Signature;");
         env->DeleteLocalRef(package_info_class);
         jobjectArray signature_object_array = (jobjectArray) env->GetObjectField(
-                package_info_object,
-                fieldId);
+            package_info_object,  fieldId);
         if (signature_object_array == NULL) {
             return NULL;
         }
@@ -569,7 +571,7 @@ JNICALL jboolean verify(JNIEnv *env, jclass) {
 
     jstring signatureStr = (jstring) env->CallObjectMethod(signatureObject, toCharsString);
     const char *signature = env->GetStringUTFChars(
-            (jstring) env->CallObjectMethod(signatureObject, toCharsString), NULL);
+        (jstring) env->CallObjectMethod(signatureObject, toCharsString), NULL);
 
     env->DeleteLocalRef(binderClass);
     env->DeleteLocalRef(contextClass);
@@ -799,11 +801,8 @@ fileMerge(JNIEnv *env, jclass, jstring sourcePath, jobjectArray paths) {
     return 1;
 }
 
-JNICALL jboolean saveDeviceStoredId(
-        JNIEnv *env, jclass,
-        jstring rootPath,
-        jobject assetManager,
-        jstring devId) {
+JNICALL jboolean saveDeviceStoredId( JNIEnv *env, jclass, jstring rootPath,
+    jobject assetManager, jstring devId) {
 
     std::string sId = jstring2str(env, devId);
     DEBUG("30000000 %s", sId.c_str());
@@ -889,14 +888,14 @@ JNICALL jstring getEncodeInfo(JNIEnv *env, jclass) {
 */
 int registerNatives(JNIEnv *env) {
     JNINativeMethod registerMethods[] = {
-            {"verify",                "()Z",                                                                       (jboolean *) verify},
-            {"getKey",              "()Ljava/lang/String;",                                                      (jstring *) getKey},
-            {"fileEncrypt",         "(Ljava/lang/String;Ljava/lang/String;)I",                                   (void *) fileEncrypt},
-            {"fileDecrypt",         "(Ljava/lang/String;Ljava/lang/String;)I",                                   (void *) fileDecrypt},
-            {"fileDivision",        "(Ljava/lang/String;Ljava/lang/String;I)I",                                  (void *) fileDivision},
-            {"fileMerge",           "(Ljava/lang/String;[Ljava/lang/String;)I",                                  (void *) fileMerge},
-            {"getEncodeDeviceInfo", "()Ljava/lang/String;",                                                      (void *) getEncodeInfo},
-            {"saveStoredId",        "(Ljava/lang/String;Landroid/content/res/AssetManager;Ljava/lang/String;)Z", (void *) saveDeviceStoredId},
+        {"verify",              "()Z",                                                                       (jboolean *) verify},
+        {"getKey",              "()Ljava/lang/String;",                                                      (jstring *) getKey},
+        {"fileEncrypt",         "(Ljava/lang/String;Ljava/lang/String;)I",                                   (void *) fileEncrypt},
+        {"fileDecrypt",         "(Ljava/lang/String;Ljava/lang/String;)I",                                   (void *) fileDecrypt},
+        {"fileDivision",        "(Ljava/lang/String;Ljava/lang/String;I)I",                                  (void *) fileDivision},
+        {"fileMerge",           "(Ljava/lang/String;[Ljava/lang/String;)I",                                  (void *) fileMerge},
+        {"getEncodeDeviceInfo", "()Ljava/lang/String;",                                                      (void *) getEncodeInfo},
+        {"saveStoredId",        "(Ljava/lang/String;Landroid/content/res/AssetManager;Ljava/lang/String;)Z", (void *) saveDeviceStoredId},
     };
     int methodsNum = sizeof(registerMethods) / sizeof(registerMethods[0]);
     return registerNativeMethods(env, JNI_CLASS_PATH, registerMethods, methodsNum);

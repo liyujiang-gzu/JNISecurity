@@ -5,8 +5,6 @@
 #ifndef JNISECURITY_COMMONUTILS_H
 #define JNISECURITY_COMMONUTILS_H
 
-static const char *const JNI_CLASS_PATH = "com/github/gzuliyujiang/jni/JNISecurity";
-
 #include<string>
 #include <jni.h>
 
