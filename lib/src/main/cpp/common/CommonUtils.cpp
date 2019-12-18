@@ -1,12 +1,14 @@
-//
-// Created by liyujiang on 2019/12/18.
-//
+///
+/// Created by liyujiang on 2019/12/18.
+/// Author 大定府羡民
+///
 
 #include <string>
 #include <jni.h>
 #include "log.h"
 #include "config.h"
 #include "CommonUtils.h"
+#include "MD5.hpp"
 
 int registerNativeMethods(JNIEnv *env, const char *className, JNINativeMethod *getMethods,
                           int methodsNum) {
@@ -38,7 +40,7 @@ int isEmptyStr(JNIEnv *env, jstring str) {
     if (clsstring == nullptr) {
         return -3;
     }
-    jmethodID mid = env->GetStaticMethodID(clsstring, "isNonEmpty", "(Ljava/lang/String;)Z");
+    jmethodID mid = env->GetStaticMethodID(clsstring, "isNotEmpty", "(Ljava/lang/String;)Z");
     if (mid == nullptr) {
         return -2;
     }
@@ -50,26 +52,13 @@ int isEmptyStr(JNIEnv *env, jstring str) {
     }
 }
 
-jstring md5(JNIEnv *env, jstring str) {
-    jclass clsstring = env->FindClass(JNI_CLASS_PATH);
-    if (clsstring == nullptr) {
-        return (env)->NewStringUTF("error");
-    }
-    jmethodID mid = env->GetStaticMethodID(clsstring, "md5",
-                                           "(Ljava/lang/String;)Ljava/lang/String;");
-    if (mid == nullptr) {
-        return (env)->NewStringUTF("error");
-    }
-    return (jstring) env->CallStaticObjectMethod(clsstring, mid, str);
-}
-
 std::string jstring2str(JNIEnv *env, jstring jstr) {
     if (isEmptyStr(env, jstr) < 0) {
         return "";
     }
     char *rtn = nullptr;
     jclass clsstring = env->FindClass("java/lang/String");
-    jstring strencode = env->NewStringUTF("GB2312");
+    jstring strencode = env->NewStringUTF("UTF-8");
     jmethodID mid = env->GetMethodID(clsstring, "getBytes", "(Ljava/lang/String;)[B");
     jobject barr = env->CallObjectMethod(jstr, mid, strencode);
     jsize alen = env->GetArrayLength((jbyteArray) barr);
@@ -100,6 +89,26 @@ jstring str2jstring(JNIEnv *env, const char *pat) {
     jstring encoding = (env)->NewStringUTF("UTF-8");
     //将byte数组转换为java String,并输出
     return (jstring) (env)->NewObject(strClass, ctorID, bytes, encoding);
+}
+
+jstring md5(JNIEnv *env, jstring str) {
+    jclass findClass = env->FindClass(JNI_CLASS_PATH);
+    if (findClass == nullptr) {
+        return (env)->NewStringUTF("error");
+    }
+    jmethodID mid = env->GetStaticMethodID(findClass, "md5",
+                                           "(Ljava/lang/String;)Ljava/lang/String;");
+    if (mid == nullptr) {
+        return (env)->NewStringUTF("error");
+    }
+    jobject md5ByJava = env->CallStaticObjectMethod(findClass, mid, str);
+    DEBUG("md5ByJava=%s", jstring2str(env, (jstring) md5ByJava).c_str());
+
+    std::string cStr = jstring2str(env, str);
+    const char *pat = toMD5(cStr).c_str();
+    jstring md5ByC = str2jstring(env, pat);
+    DEBUG("md5ByC=%s", pat);
+    return md5ByC;
 }
 
 /**

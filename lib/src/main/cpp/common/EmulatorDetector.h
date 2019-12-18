@@ -1,6 +1,7 @@
-//
-// Created by Admin on 2018/9/25.
-//
+///
+/// Created by liyujiang on 2019/12/18.
+/// Author 大定府羡民
+///
 
 #ifndef EMULATOR_DETECTOR_H
 #define EMULATOR_DETECTOR_H

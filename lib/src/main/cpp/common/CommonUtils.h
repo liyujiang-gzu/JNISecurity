@@ -1,6 +1,7 @@
-//
-// Created by liyujiang on 2019/12/18.
-//
+///
+/// Created by liyujiang on 2019/12/18.
+/// Author 大定府羡民
+///
 
 #ifndef JNISECURITY_COMMONUTILS_H
 #define JNISECURITY_COMMONUTILS_H

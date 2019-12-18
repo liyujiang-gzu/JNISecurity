@@ -54,7 +54,7 @@ public class JNISecurity {
         return appContext;
     }
 
-    public static boolean isNonEmpty(String str) {
+    public static boolean isNotEmpty(String str) {
         return str != null && str.length() >= 1;
     }
 
