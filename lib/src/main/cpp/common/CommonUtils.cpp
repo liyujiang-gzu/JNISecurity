@@ -9,7 +9,6 @@
 #include "config.h"
 #include "CommonUtils.h"
 #include "MD5.hpp"
-#include "../json/JSON.hpp"
 
 // 避免重复初始化
 static jboolean hasInit = JNI_FALSE;
@@ -200,45 +199,6 @@ std::string getAppPackageName(JNIEnv *env) {
     }
     catch (...) {
         return "";
-    }
-}
-
-neb::JSON getAppVersionInfo(JNIEnv *env, neb::JSON rootInfo) {
-    try {
-        jobject context = getAppContext(env);
-        jclass contextClass = env->FindClass("android/content/Context");
-        jmethodID getPMId = env->GetMethodID(contextClass, "getPackageManager",
-                                             "()Landroid/content/pm/PackageManager;");
-        jobject pm = env->CallObjectMethod(context, getPMId);
-        // 获取pi对象
-        jclass pmClass = env->FindClass("android/content/pm/PackageManager");
-        jmethodID getPIId = env->GetMethodID(pmClass, "getPackageInfo",
-                                             "(Ljava/lang/String;I)Landroid/content/pm/PackageInfo;");
-        std::string packageJS = getAppPackageName(env);
-        jobject pi = env->CallObjectMethod(pm, getPIId, str2jstring(env, packageJS.c_str()), 0);
-        //获取版本信息
-        jclass piClass = env->FindClass("android/content/pm/PackageInfo");
-        jfieldID jfdVerCode = env->GetFieldID(piClass, "versionCode", "I");
-        int versionCodeI = env->GetIntField(pi, jfdVerCode);
-        char strVersionCode[64];
-        sprintf(strVersionCode, "%d", versionCodeI);
-        jstring versionCodeJS = env->NewStringUTF(strVersionCode);
-        std::string strVersion = jstring2str(env, versionCodeJS);
-        rootInfo.Add("appVersionCode", strVersion);
-        jfieldID JidVN = env->GetFieldID(piClass, "versionName", "Ljava/lang/String;");
-        jobject versionName = env->GetObjectField(pi, JidVN);
-        std::string verName = jstring2str(env, (jstring) versionName);
-        rootInfo.Add("appVersionName", verName);
-        env->DeleteLocalRef(contextClass);
-        env->DeleteLocalRef(pm);
-        env->DeleteLocalRef(pmClass);
-        env->DeleteLocalRef(pi);
-        env->DeleteLocalRef(piClass);
-
-        return rootInfo;
-    }
-    catch (...) {
-        return rootInfo;
     }
 }
 

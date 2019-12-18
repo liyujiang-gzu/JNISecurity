@@ -14,9 +14,9 @@
 #include "common/CommonUtils.h"
 #include "common/BASE64.hpp"
 #include "common/MD5.hpp"
-#include "common/EmulatorDetector.h"
 #include "common/FileOper.h"
 #include "json/JSON.hpp"
+#include "emulator/EmulatorDetector.h"
 
 // 对应的 Java 类
 const char *JNI_CLASS_PATH = "com/github/gzuliyujiang/jni/JNISecurity";
@@ -180,6 +180,45 @@ neb::JSON getHookInfo(JNIEnv *env, neb::JSON infoObj) {
     }
     catch (...) {
         return infoObj;
+    }
+}
+
+neb::JSON getAppVersionInfo(JNIEnv *env, neb::JSON rootInfo) {
+    try {
+        jobject context = getAppContext(env);
+        jclass contextClass = env->FindClass("android/content/Context");
+        jmethodID getPMId = env->GetMethodID(contextClass, "getPackageManager",
+                                             "()Landroid/content/pm/PackageManager;");
+        jobject pm = env->CallObjectMethod(context, getPMId);
+        // 获取pi对象
+        jclass pmClass = env->FindClass("android/content/pm/PackageManager");
+        jmethodID getPIId = env->GetMethodID(pmClass, "getPackageInfo",
+                                             "(Ljava/lang/String;I)Landroid/content/pm/PackageInfo;");
+        std::string packageJS = getAppPackageName(env);
+        jobject pi = env->CallObjectMethod(pm, getPIId, str2jstring(env, packageJS.c_str()), 0);
+        //获取版本信息
+        jclass piClass = env->FindClass("android/content/pm/PackageInfo");
+        jfieldID jfdVerCode = env->GetFieldID(piClass, "versionCode", "I");
+        int versionCodeI = env->GetIntField(pi, jfdVerCode);
+        char strVersionCode[64];
+        sprintf(strVersionCode, "%d", versionCodeI);
+        jstring versionCodeJS = env->NewStringUTF(strVersionCode);
+        std::string strVersion = jstring2str(env, versionCodeJS);
+        rootInfo.Add("appVersionCode", strVersion);
+        jfieldID JidVN = env->GetFieldID(piClass, "versionName", "Ljava/lang/String;");
+        jobject versionName = env->GetObjectField(pi, JidVN);
+        std::string verName = jstring2str(env, (jstring) versionName);
+        rootInfo.Add("appVersionName", verName);
+        env->DeleteLocalRef(contextClass);
+        env->DeleteLocalRef(pm);
+        env->DeleteLocalRef(pmClass);
+        env->DeleteLocalRef(pi);
+        env->DeleteLocalRef(piClass);
+
+        return rootInfo;
+    }
+    catch (...) {
+        return rootInfo;
     }
 }
 
@@ -381,13 +420,6 @@ JNICALL jboolean mergeFile(JNIEnv *env, jclass, jstring sourcePath, jobjectArray
     return static_cast<jboolean>(fileMerge(env, sourcePath, paths) > 0);
 }
 
-/*
- * 动态注册 native 方法数组，可以不受方法名称的限制，与 Java native 方法一一对应
- *
- * 私密数据存储部分：https://github.com/RockyQu/JNIKeyProtection
- * 文件加密解密部分：https://github.com/earthWo/FileEncryption
- * 设备唯一标识部分：https://github.com/quert999/DeviceObservern
-*/
 int registerNatives(JNIEnv *env) {
     JNINativeMethod registerMethods[] = {
         {"initial",       "(Landroid/app/Application;)",              (void *) initial},
@@ -403,9 +435,6 @@ int registerNatives(JNIEnv *env) {
     return registerNativeMethods(env, JNI_CLASS_PATH, registerMethods, methodsNum);
 }
 
-/*
- * 默认执行的初始化方法
- */
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *) {
     DEBUG("Dynamic library was load");
     JNIEnv *env = nullptr;
