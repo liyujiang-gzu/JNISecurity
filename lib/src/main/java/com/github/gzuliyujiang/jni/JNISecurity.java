@@ -24,10 +24,10 @@ public class JNISecurity {
         super();
     }
 
-    /**
-     * 全局上下文初始化
-     */
-    public static native void initial(Application application);
+//    /**
+//     * 全局上下文初始化
+//     */
+//    public static native void initial(Application application);
 
     /**
      * 初始化并判断当前 APP 是否为合法应用，只需调用一次

@@ -393,7 +393,9 @@ jboolean checkAuthPass(JNIEnv *env) {
 }
 
 JNICALL jstring getDeviceInfo(JNIEnv *env, jclass) {
-    return getDeviceInfoEncrypt(env);
+    //return getDeviceInfoEncrypt(env);
+    std::string strResult = getDeviceJson(env);
+    return str2jstring(env, strResult.c_str());
 }
 
 JNICALL jstring getApiKey(JNIEnv *env, jclass) {
@@ -422,7 +424,7 @@ JNICALL jboolean mergeFile(JNIEnv *env, jclass, jstring sourcePath, jobjectArray
 
 int registerNatives(JNIEnv *env) {
     JNINativeMethod registerMethods[] = {
-        {"initial",       "(Landroid/app/Application;)",              (void *) initial},
+        //{"initial",       "(Landroid/app/Application;)",              (void *) initial},
         {"verify",        "()Z",                                      (jboolean *) verify},
         {"getDeviceInfo", "()Ljava/lang/String;",                     (jstring *) getDeviceInfo},
         {"getApiKey",     "()Ljava/lang/String;",                     (jstring *) getApiKey},
