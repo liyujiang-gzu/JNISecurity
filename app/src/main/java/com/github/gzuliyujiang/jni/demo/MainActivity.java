@@ -27,10 +27,10 @@ public class MainActivity extends AppCompatActivity {
         TextView textView = findViewById(R.id.value);
         boolean flag = JNISecurity.verify();
         Log.w(TAG, String.valueOf(flag));
-        String key = JNISecurity.getKey();
+        String key = JNISecurity.getApiKey();
         Log.w(TAG, key);
         textView.setText(String.format("%s\n%s\n\n", flag, key));
-        String result = JNISecurity.getEncodeDeviceInfo();
+        String result = JNISecurity.getDeviceInfo();
         textView.append(result);
         Log.w(TAG, result);
     }

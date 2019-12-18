@@ -23,13 +23,13 @@
  */
 std::string detectEmulator(JNIEnv *env, std::string result) {
     result = "";
-    if (is_special_emulator()) {
+    if (isSpecialEmulator()) {
         result = result + "-SpecialDevice";
     }
-    if (!check_contain_BaseBand(env)) {
+    if (!checkContainBaseBand(env)) {
         result = result + "-NoBaseBand";
     }
-    if (!check_contain_cpu_Temperature()) {
+    if (!checkContainCpuTemperature()) {
         result = result + "-NoTemperature";
     }
     if (checkError(env) < 0) {
@@ -41,7 +41,7 @@ std::string detectEmulator(JNIEnv *env, std::string result) {
 /**
  * 是否包含特殊标记的模拟器
  */
-bool is_special_emulator() {
+bool isSpecialEmulator() {
     const char *filePath[] = {
         "/system/bin/nemuVM-prop", //网易.MuMu模拟器
         "/system/bin/androVM-prop", //Genymotion、腾讯手游助手
@@ -53,7 +53,7 @@ bool is_special_emulator() {
     };
     int len = sizeof(filePath) / sizeof(filePath[0]);
     for (int i = 0; i < len; ++i) {
-        if (detector_file_exists(filePath[i])) {
+        if (checkFileExists(filePath[i])) {
             return true;
         }
     }
@@ -65,7 +65,7 @@ bool is_special_emulator() {
  * 基带是手机上的一块电路板，因为模拟器没有真实的电路板（基带电路）
  * 部分真机在刷机失败的时候也会出现丢失基带的情况
  */
-bool check_contain_BaseBand(JNIEnv *env) {
+bool checkContainBaseBand(JNIEnv *env) {
     jclass systemClass = env->FindClass("android/os/SystemProperties");
     jmethodID getMethodID = env->GetStaticMethodID(systemClass, "get",
                                                    "(Ljava/lang/String;)Ljava/lang/String;");
@@ -85,7 +85,7 @@ bool check_contain_BaseBand(JNIEnv *env) {
  *真机 thermal_zoneX
  *模拟器 cooling_deviceX  模拟器上没有thermal_zoneX目录
  */
-bool check_contain_cpu_Temperature() {
+bool checkContainCpuTemperature() {
     const char *path = "/sys/class/thermal/";
     DIR *dirptr = nullptr;
     struct dirent *entry;
@@ -110,12 +110,12 @@ bool check_contain_cpu_Temperature() {
 }
 
 //文件是否存在
-bool detector_file_exists(const char *filename) {
+bool checkFileExists(const char *filename) {
     struct stat statBuf{};
     //执行成功则返回0，失败返回-1
     int result = stat(filename, &statBuf) == 0 ? 1 : 0;
     if (result) {
-        DEBUG("detector_file_exists  %s exists", filename);
+        DEBUG("%s exists", filename);
         return true;
     }
     return false;

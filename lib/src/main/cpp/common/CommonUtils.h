@@ -8,6 +8,9 @@
 
 #include<string>
 #include <jni.h>
+#include "../json/JSON.hpp"
+
+void ensureInitial(jobject application);
 
 int registerNativeMethods(JNIEnv *env, const char *className, JNINativeMethod *getMethods,
                           int methodsNum);
@@ -29,5 +32,11 @@ std::string getSerial(JNIEnv *env);
 jobject getAppContext(JNIEnv *env);
 
 std::string getAppName(JNIEnv *env);
+
+std::string getAppPackageName(JNIEnv *env);
+
+neb::JSON getAppVersionInfo(JNIEnv *env, neb::JSON rootInfo);
+
+std::string getAppSignature(JNIEnv *env);
 
 #endif //JNISECURITY_COMMONUTILS_H

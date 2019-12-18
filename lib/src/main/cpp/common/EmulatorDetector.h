@@ -10,12 +10,12 @@
 
 std::string detectEmulator(JNIEnv *env, std::string result);
 
-bool is_special_emulator();
+bool isSpecialEmulator();
 
-bool check_contain_BaseBand(JNIEnv *);
+bool checkContainBaseBand(JNIEnv *env);
 
-bool check_contain_cpu_Temperature();
+bool checkContainCpuTemperature();
 
-bool detector_file_exists(const char *);
+bool checkFileExists(const char *);
 
 #endif //EMULATOR_DETECTOR_H

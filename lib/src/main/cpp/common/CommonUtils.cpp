@@ -9,6 +9,20 @@
 #include "config.h"
 #include "CommonUtils.h"
 #include "MD5.hpp"
+#include "../json/JSON.hpp"
+
+// 避免重复初始化
+static jboolean hasInit = JNI_FALSE;
+// 全局上下文
+static jobject appContext = nullptr;
+
+void ensureInitial(jobject application) {
+    if (hasInit) {
+        return;
+    }
+    appContext = application;
+    hasInit = JNI_TRUE;
+}
 
 int registerNativeMethods(JNIEnv *env, const char *className, JNINativeMethod *getMethods,
                           int methodsNum) {
@@ -137,7 +151,6 @@ void executeCMD(const char *cmd, char *result, int expectResultSize) {
             strcat(result, buf_ps);
         }
         pclose(ptr);
-        ptr = nullptr;
     } else {
         DEBUG("popen %s error", ps);
     }
@@ -152,18 +165,131 @@ std::string getSerial(JNIEnv *env) {
 }
 
 jobject getAppContext(JNIEnv *env) {
-    jclass jniClass = env->FindClass(JNI_CLASS_PATH);
-    jmethodID staticMethodId = env->GetStaticMethodID(jniClass, "getAppContext",
-                                                      "()Landroid/app/Application;");
-    return env->CallStaticObjectMethod(jniClass, staticMethodId);
+    if (hasInit) {
+        return appContext;
+    }
+    jclass activityThread = env->FindClass("android/app/ActivityThread");
+    jmethodID currentActivityThread = env->GetStaticMethodID(activityThread,
+                                                             "currentActivityThread",
+                                                             "()Landroid/app/ActivityThread;");
+    jobject at = env->CallStaticObjectMethod(activityThread, currentActivityThread);
+    jmethodID getApplication = env->GetMethodID(activityThread, "getApplication",
+                                                "()Landroid/app/Application;");
+    return env->CallObjectMethod(at, getApplication);
 }
 
 std::string getAppName(JNIEnv *env) {
-    jclass jniClass = env->FindClass(JNI_CLASS_PATH);
     jobject appContext = getAppContext(env);
+    jclass jniClass = env->FindClass(JNI_CLASS_PATH);
     jmethodID jmiAppName = env->GetStaticMethodID(jniClass, "getAppName",
                                                   "(Landroid/content/Context;)Ljava/lang/String;");
     jobject appName = env->CallStaticObjectMethod(jniClass, jmiAppName, appContext);
     std::string strAppName = jstring2str(env, (jstring) appName);
     return strAppName;
+}
+
+std::string getAppPackageName(JNIEnv *env) {
+    try {
+        jobject context = getAppContext(env);
+        jclass contextClass = env->FindClass("android/content/Context");
+        jmethodID getPackageNameId = env->GetMethodID(contextClass, "getPackageName",
+                                                      "()Ljava/lang/String;");
+        jobject packNameString = env->CallObjectMethod(context, getPackageNameId);
+        env->DeleteLocalRef(contextClass);
+        return jstring2str(env, (jstring) packNameString);
+    }
+    catch (...) {
+        return "";
+    }
+}
+
+neb::JSON getAppVersionInfo(JNIEnv *env, neb::JSON rootInfo) {
+    try {
+        jobject context = getAppContext(env);
+        jclass contextClass = env->FindClass("android/content/Context");
+        jmethodID getPMId = env->GetMethodID(contextClass, "getPackageManager",
+                                             "()Landroid/content/pm/PackageManager;");
+        jobject pm = env->CallObjectMethod(context, getPMId);
+        // 获取pi对象
+        jclass pmClass = env->FindClass("android/content/pm/PackageManager");
+        jmethodID getPIId = env->GetMethodID(pmClass, "getPackageInfo",
+                                             "(Ljava/lang/String;I)Landroid/content/pm/PackageInfo;");
+        std::string packageJS = getAppPackageName(env);
+        jobject pi = env->CallObjectMethod(pm, getPIId, str2jstring(env, packageJS.c_str()), 0);
+        //获取版本信息
+        jclass piClass = env->FindClass("android/content/pm/PackageInfo");
+        jfieldID jfdVerCode = env->GetFieldID(piClass, "versionCode", "I");
+        int versionCodeI = env->GetIntField(pi, jfdVerCode);
+        char strVersionCode[64];
+        sprintf(strVersionCode, "%d", versionCodeI);
+        jstring versionCodeJS = env->NewStringUTF(strVersionCode);
+        std::string strVersion = jstring2str(env, versionCodeJS);
+        rootInfo.Add("appVersionCode", strVersion);
+        jfieldID JidVN = env->GetFieldID(piClass, "versionName", "Ljava/lang/String;");
+        jobject versionName = env->GetObjectField(pi, JidVN);
+        std::string verName = jstring2str(env, (jstring) versionName);
+        rootInfo.Add("appVersionName", verName);
+        env->DeleteLocalRef(contextClass);
+        env->DeleteLocalRef(pm);
+        env->DeleteLocalRef(pmClass);
+        env->DeleteLocalRef(pi);
+        env->DeleteLocalRef(piClass);
+
+        return rootInfo;
+    }
+    catch (...) {
+        return rootInfo;
+    }
+}
+
+std::string getAppSignature(JNIEnv *env) {
+    try {
+        jobject context = getAppContext(env);
+        jclass context_class = env->GetObjectClass(context);
+        jmethodID methodId = env->GetMethodID(context_class, "getPackageManager",
+                                              "()Landroid/content/pm/PackageManager;");
+        jobject package_manager_object = env->CallObjectMethod(context, methodId);
+        if (package_manager_object == nullptr) {
+            DEBUG("getPackageManager() Failed!");
+            return "";
+        }
+        methodId = env->GetMethodID(context_class, "getPackageName", "()Ljava/lang/String;");
+        jobject package_name_string = env->CallObjectMethod(context, methodId);
+        if (package_name_string == nullptr) {
+            DEBUG("getPackageName() Failed!");
+            return "";
+        }
+        env->DeleteLocalRef(context_class);
+        jclass pack_manager_class = env->GetObjectClass(package_manager_object);
+        methodId = env->GetMethodID(pack_manager_class, "getPackageInfo",
+                                    "(Ljava/lang/String;I)Landroid/content/pm/PackageInfo;");
+        env->DeleteLocalRef(pack_manager_class);
+        jobject package_info_object = env->CallObjectMethod(package_manager_object, methodId,
+                                                            package_name_string, GET_SIGNATURES);
+        if (package_info_object == nullptr) {
+            return "";
+        }
+        env->DeleteLocalRef(package_manager_object);
+        jclass package_info_class = env->GetObjectClass(package_info_object);
+        jfieldID fieldId = env->GetFieldID(package_info_class, "signatures",
+                                           "[Landroid/content/pm/Signature;");
+        env->DeleteLocalRef(package_info_class);
+        jobject signature_object_array = env->GetObjectField(
+            package_info_object, fieldId);
+        if (signature_object_array == nullptr) {
+            return "";
+        }
+        jobject signature_object = env->GetObjectArrayElement((jobjectArray) signature_object_array,
+                                                              0);
+        env->DeleteLocalRef(package_info_object);
+        jclass signature_class = env->GetObjectClass(signature_object);
+        methodId = env->GetMethodID(signature_class, "toCharsString", "()Ljava/lang/String;");
+        env->DeleteLocalRef(signature_class);
+        jobject signature_string = env->CallObjectMethod(signature_object, methodId);
+        return jstring2str(env, (jstring) signature_string);
+    }
+    catch (...) {
+        return "";
+    }
+
 }

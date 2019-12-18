@@ -13,7 +13,9 @@
 extern const char *JNI_CLASS_PATH;
 extern const char *APP_PACKAGE_NAME;
 extern const char *SIGNATURE_KEY;
-extern const char *DECRYPT_KEY;
+extern const char *API_DECRYPT_KEY;
 extern const char *MD5_KEY;
+extern const int GET_SIGNATURES;
+extern const int GET_SIGNING_CERTIFICATES;
 
 #endif //JNISECURITY_CONFIG_H
