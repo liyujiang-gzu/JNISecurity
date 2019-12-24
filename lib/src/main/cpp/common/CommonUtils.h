@@ -27,7 +27,7 @@ void executeCMD(const char *cmd, char *result, int expectResultSize);
 
 std::string getSerial(JNIEnv *env);
 
-jobject getAppContext(JNIEnv *env);
+jobject getApplication(JNIEnv *env);
 
 std::string getAppPackageName(JNIEnv *env);
 

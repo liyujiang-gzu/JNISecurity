@@ -93,7 +93,8 @@ jstring str2jstring(JNIEnv *env, const char *pat) {
 
 jstring md5(JNIEnv *env, jstring str) {
     std::string cStr = jstring2str(env, str);
-    const char *pat = toMD5(cStr).c_str();
+    std::string stdStr = toMD5(cStr);
+    const char *pat = stdStr.c_str();
     jstring md5ByC = str2jstring(env, pat);
     return md5ByC;
 }
@@ -104,19 +105,16 @@ jstring md5(JNIEnv *env, jstring str) {
  * @param result  执行结果
  */
 void executeCMD(const char *cmd, char *result, int expectResultSize) {
-
     const int bufSize = 32;
     char buf_ps[bufSize];
     // 命令行数组（不能大于128）
     char ps[128] = {0};
-
     FILE *ptr;
     strcpy(ps, cmd);
     if ((ptr = popen(ps, "r")) != nullptr) {
         while (fgets(buf_ps, bufSize, ptr) != nullptr) {
-
-            int existLen = strlen(result);
-            int bufLen = strlen(buf_ps);
+            int existLen = static_cast<int>(strlen(result));
+            int bufLen = static_cast<int>(strlen(buf_ps));
             if (existLen + bufLen > expectResultSize) {
                 break;
             }
@@ -137,7 +135,7 @@ std::string getSerial(JNIEnv *env) {
     return strSerial;
 }
 
-jobject getAppContext(JNIEnv *env) {
+jobject getApplication(JNIEnv *env) {
     jclass activityThread = env->FindClass("android/app/ActivityThread");
     jmethodID currentActivityThread = env->GetStaticMethodID(activityThread,
                                                              "currentActivityThread",
@@ -150,7 +148,7 @@ jobject getAppContext(JNIEnv *env) {
 
 std::string getAppPackageName(JNIEnv *env) {
     try {
-        jobject context = getAppContext(env);
+        jobject context = getApplication(env);
         jclass contextClass = env->FindClass("android/content/Context");
         jmethodID getPackageNameId = env->GetMethodID(contextClass, "getPackageName",
                                                       "()Ljava/lang/String;");
@@ -159,13 +157,14 @@ std::string getAppPackageName(JNIEnv *env) {
         return jstring2str(env, (jstring) packNameString);
     }
     catch (...) {
+        DEBUG("get package name has error!");
         return "";
     }
 }
 
 std::string getAppSignature(JNIEnv *env) {
     try {
-        jobject context = getAppContext(env);
+        jobject context = getApplication(env);
         jclass context_class = env->GetObjectClass(context);
         jmethodID methodId = env->GetMethodID(context_class, "getPackageManager",
                                               "()Landroid/content/pm/PackageManager;");

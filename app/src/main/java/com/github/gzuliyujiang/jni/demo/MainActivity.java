@@ -16,7 +16,7 @@ import com.github.gzuliyujiang.jni.JNISecurity;
  * https://rockycoder.cn/android%20ndk/2018/11/18/Android-NDK-DecryptKey.html
  */
 public class MainActivity extends AppCompatActivity {
-    private static final String TAG = "lyj-java";
+    private static final String TAG = "liyujiang-java";
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
 
     @Override

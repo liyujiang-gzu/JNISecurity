@@ -23,7 +23,7 @@ const char *JNI_CLASS_PATH = "com/github/gzuliyujiang/jni/JNISecurity";
 // 需要被验证应用的包名
 const char *APP_PACKAGE_NAME = "com.github.gzuliyujiang.jni.demo";
 // 应用签名，注意开发版和发布版的区别，发布版需要使用正式签名打包后获取
-const char *SIGNATURE_KEY = "308202e2308201ca020101300d06092a864886f70d010105050030373116301406035504030c0d416e64726f69642044656275673110300e060355040a0c07416e64726f6964310b3009060355040613025553301e170d3139303932353032333330325a170d3439303931373032333330325a30373116301406035504030c0d416e64726f69642044656275673110300e060355040a0c07416e64726f6964310b300906035504061302555330820122300d06092a864886f70d01010105000382010f003082010a0282010100a2f642a5f8363b805c5b71718c7d3aa67a7c4f5445094198a4c3c84c0460773b6451c2103a164a344c77fced2c96c0c086c975d46629818df667d585dc80fbf97d32d83ef12f2436e64b6ec1535dc08cd0d508f0a91ad0f45e012fbca56aff0ab7c03821295678fd9833de7fd300ea6a28db4754c89abd30aaa3e2822c6ec38f887dfb90672b087d71ce3ec5f97268187c78cfe8ceebc21a6c1fd99ffa96e4ea153e95edd6cac6bd0d82379c3ca20a2b808e03e93289406cc7d5caf5d5fb1d13c690b809fee52a20783e6e25ed922cdb620df1be9a37da27cce96ed5ec160bbba2384a9e881cbe857021b56c568cdd14021db6459ec5bcca20e8461f343069ab0203010001300d06092a864886f70d010105050003820101007339d75da7db27e85ba6939485bcfd96f3db654e57de3064b264ef502b60434df8b4669ef1a2ab0d96e37a9a228090c63a81b25a9f007e8ddc59b308ca66e38a5a876dafb71b4699bb9330126f99575f15ec9f17c481bde9dd7250f8f53095c02d782cbc18509c5fa6742025af2fb43b021bc90f0875bb72179dc68880ebdc2e6cc8adb2b193cb17c1fd0587689e9a9cf5c49f79c2998adbb18eaf59f06bfd34e2503ceaa9bddeb77a9e9d41e78fa6f09bedf7df2e1274fa5aa8b73ba3daea626512ee924df3a369c8d2db8da932feb9be82bd2e84e292a7ed5f0f3b15bd4b9e82b8f5103363b6570aad4808192dd9035dde3dff072063ec1a3f7869d3fddabe";
+const char *SIGNATURE_KEY = "308202e2308201ca020101300d06092a864886f70d010105050030373116301406035504030c0d416e64726f69642044656275673110300e060355040a0c07416e64726f6964310b3009060355040613025553301e170d3139303930353037333035385a170d3439303832383037333035385a30373116301406035504030c0d416e64726f69642044656275673110300e060355040a0c07416e64726f6964310b300906035504061302555330820122300d06092a864886f70d01010105000382010f003082010a0282010100b4bc43c82857a7ecec8d9c15ead588edd22d2faf8ea6337ff723890b4b2d9b740af33d6428c08444fe141c40feae4e9516570fbf3da1c00dbff87db341665c2dadbd17e9962760cbf91096fd1687cdc60b9786b0dd2155b818a8d19df51f611db50076790a17b542adf27db0f332bb64e9820ad0771919e9fbec44121b71a4d59615ad12bf8bc464aa61f259859013d735685f44ec183175a1c73f96673363ff88eeba2c14a47e86326f0fc9f779b46767271f0275153ca4f3222b4a8b00a0f79c7b89e8955918c002631dd386747ce8ae2013aabfb3929c5f72be0a5227cf3a8d6dee082770ea39255243d0fb76355688ab35b630cf9b90ce8f8266c5b7306f0203010001300d06092a864886f70d010105050003820101008a0c2485d9de0e8fea461c1484f9f76bd";
 // 服务端接口数据解密秘钥
 const char *API_DECRYPT_KEY = "2019/12/19 02:00";
 // MD5加盐
@@ -167,7 +167,7 @@ int isRooted() {
 
 neb::JSON getHookInfo(JNIEnv *env, neb::JSON infoObj) {
     try {
-        jobject context = getAppContext(env);
+        jobject context = getApplication(env);
         jclass clsCheckHook = env->FindClass(JNI_CLASS_PATH);
         jmethodID midIsHook = env->GetStaticMethodID(clsCheckHook, "isHook",
                                                      "(Landroid/content/Context;)Z");
@@ -185,7 +185,7 @@ neb::JSON getHookInfo(JNIEnv *env, neb::JSON infoObj) {
 
 neb::JSON getAppVersionInfo(JNIEnv *env, neb::JSON rootInfo) {
     try {
-        jobject context = getAppContext(env);
+        jobject context = getApplication(env);
         jclass contextClass = env->FindClass("android/content/Context");
         jmethodID getPMId = env->GetMethodID(contextClass, "getPackageManager",
                                              "()Landroid/content/pm/PackageManager;");
@@ -225,7 +225,7 @@ neb::JSON getAppVersionInfo(JNIEnv *env, neb::JSON rootInfo) {
 std::string getDeviceJson(JNIEnv *env) {
     neb::JSON infoObj;
 
-    jobject context = getAppContext(env);
+    jobject context = getApplication(env);
     jclass contextClass = env->GetObjectClass(context);
     jmethodID getAssets = env->GetMethodID(contextClass, "getAssets",
                                            "()Landroid/content/res/AssetManager;");
@@ -360,14 +360,18 @@ jstring getDeviceInfoEncrypt(JNIEnv *env) {
 }
 
 JNICALL jboolean verify(JNIEnv *env, jclass) {
-    const char *charPackageName = getAppPackageName(env).c_str();
+    // c_str()的坑，参阅 https://blog.csdn.net/u013383344/article/details/53379029
+    std::string stdPackageName = getAppPackageName(env);
+    const char *charPackageName = stdPackageName.c_str();
     if (strcmp(charPackageName, APP_PACKAGE_NAME) != 0) {
-        DEBUG("package name not equals %s", APP_PACKAGE_NAME);
+        DEBUG("package name %s not equals %s", charPackageName, APP_PACKAGE_NAME);
         authPass = JNI_FALSE;
         return JNI_FALSE;
     }
-    const char *signature = getAppSignature(env).c_str();
-    DEBUG("current apk signature %s", signature);
+    std::string stdSignature = getAppSignature(env);
+    const char *signature = stdSignature.c_str();
+    DEBUG("current signature %s", signature);
+    DEBUG("reserve signature %s", SIGNATURE_KEY);
     if (strcmp(signature, SIGNATURE_KEY) == 0) {
         DEBUG("signature verification passed");
         authPass = JNI_TRUE;

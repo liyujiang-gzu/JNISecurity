@@ -13,24 +13,24 @@
 namespace neb {
 
     JSON::JSON()
-        : m_pJsonData(NULL), m_pExternJsonDataRef(NULL) {
+            : m_pJsonData(NULL), m_pExternJsonDataRef(NULL) {
         // m_pJsonData = cJSON_CreateObject();  
     }
 
     JSON::JSON(const std::string &strJson)
-        : m_pJsonData(NULL), m_pExternJsonDataRef(NULL) {
+            : m_pJsonData(NULL), m_pExternJsonDataRef(NULL) {
         Parse(strJson);
     }
 
     JSON::JSON(const JSON *pJsonObject)
-        : m_pJsonData(NULL), m_pExternJsonDataRef(NULL) {
+            : m_pJsonData(NULL), m_pExternJsonDataRef(NULL) {
         if (pJsonObject) {
             Parse(pJsonObject->ToString());
         }
     }
 
     JSON::JSON(const JSON &oJsonObject)
-        : m_pJsonData(NULL), m_pExternJsonDataRef(NULL) {
+            : m_pJsonData(NULL), m_pExternJsonDataRef(NULL) {
         Parse(oJsonObject.ToString());
     }
 
@@ -39,7 +39,8 @@ namespace neb {
     }
 
     JSON &JSON::operator=(const JSON &oJsonObject) {
-        Parse(oJsonObject.ToString().c_str());
+        std::string stdStr = oJsonObject.ToString();
+        Parse(stdStr.c_str());
         return (*this);
     }
 
@@ -559,7 +560,8 @@ namespace neb {
             m_strErrMsg = "not a json object! json array?";
             return (false);
         }
-        cJSON *pJsonStruct = cJSON_Parse(oJsonObject.ToString().c_str());
+        std::string stdStr = oJsonObject.ToString();
+        cJSON *pJsonStruct = cJSON_Parse(stdStr.c_str());
         if (pJsonStruct == NULL) {
             m_strErrMsg = std::string("prase json string error at ") + cJSON_GetErrorPtr();
             return (false);
@@ -861,7 +863,8 @@ namespace neb {
             m_strErrMsg = "not a json object! json array?";
             return (false);
         }
-        cJSON *pJsonStruct = cJSON_Parse(oJsonObject.ToString().c_str());
+        std::string stdStr = oJsonObject.ToString();
+        cJSON *pJsonStruct = cJSON_Parse(stdStr.c_str());
         if (pJsonStruct == NULL) {
             m_strErrMsg = std::string("prase json string error at ") + cJSON_GetErrorPtr();
             return (false);
@@ -1313,7 +1316,8 @@ namespace neb {
             m_strErrMsg = "not a json array! json object?";
             return (false);
         }
-        cJSON *pJsonStruct = cJSON_Parse(oJsonObject.ToString().c_str());
+        std::string stdStr = oJsonObject.ToString();
+        cJSON *pJsonStruct = cJSON_Parse(stdStr.c_str());
         if (pJsonStruct == NULL) {
             m_strErrMsg = std::string("prase json string error at ") + cJSON_GetErrorPtr();
             return (false);
@@ -1615,7 +1619,8 @@ namespace neb {
             m_strErrMsg = "not a json array! json object?";
             return (false);
         }
-        cJSON *pJsonStruct = cJSON_Parse(oJsonObject.ToString().c_str());
+        std::string stdStr = oJsonObject.ToString();
+        cJSON *pJsonStruct = cJSON_Parse(stdStr.c_str());
         if (pJsonStruct == NULL) {
             m_strErrMsg = std::string("prase json string error at ") + cJSON_GetErrorPtr();
             return (false);
@@ -1939,7 +1944,8 @@ namespace neb {
             m_strErrMsg = "not a json array! json object?";
             return (false);
         }
-        cJSON *pJsonStruct = cJSON_Parse(oJsonObject.ToString().c_str());
+        std::string stdStr = oJsonObject.ToString();
+        cJSON *pJsonStruct = cJSON_Parse(stdStr.c_str());
         if (pJsonStruct == NULL) {
             m_strErrMsg = std::string("prase json string error at ") + cJSON_GetErrorPtr();
             return (false);
@@ -2168,7 +2174,7 @@ namespace neb {
     }
 
     JSON::JSON(cJSON *pJsonData)
-        : m_pJsonData(NULL), m_pExternJsonDataRef(pJsonData) {
+            : m_pJsonData(NULL), m_pExternJsonDataRef(pJsonData) {
     }
 
 }
