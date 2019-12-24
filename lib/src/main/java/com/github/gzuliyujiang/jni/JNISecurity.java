@@ -3,17 +3,14 @@ package com.github.gzuliyujiang.jni;
 import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.os.Build;
-
-import java.security.MessageDigest;
 
 /**
  * 私密数据存储部分：用来获取解密秘钥，内含签名防盗机制
  * 文件加密解密部分：用来加密解密、切割合并文件
  * 设备唯一标识部分：用来标记唯一的用户终端设备
  */
+@SuppressWarnings("unused")
 public class JNISecurity {
 
     static {
@@ -23,11 +20,6 @@ public class JNISecurity {
     private JNISecurity() {
         super();
     }
-
-//    /**
-//     * 全局上下文初始化
-//     */
-//    public static native void initial(Application application);
 
     /**
      * 初始化并判断当前 APP 是否为合法应用，只需调用一次
@@ -67,7 +59,7 @@ public class JNISecurity {
      */
     public static native boolean mergeFile(String mergePath, String[] filePaths);
 
-    //********************  以下方法供C/C++调用，不可混淆或移除 **************************************
+    //********************  以下方法供C/C++调用，不可混淆或移除 ****************************
 
     public static boolean isNotEmpty(String str) {
         return str != null && str.length() >= 1;
@@ -87,34 +79,6 @@ public class JNISecurity {
             return Build.getSerial();
         } catch (SecurityException e) {
             return "SecurityException";
-        }
-    }
-
-    public static String getAppName(Context context) {
-        try {
-            PackageManager packageManager = context.getPackageManager();
-            PackageInfo packageInfo = packageManager.getPackageInfo(
-                context.getPackageName(), 0);
-            int labelRes = packageInfo.applicationInfo.labelRes;
-            return context.getResources().getString(labelRes);
-        } catch (Exception e) {
-            return "Exception";
-        }
-    }
-
-    public static String md5(String str) {
-        try {
-            MessageDigest instance = MessageDigest.getInstance("MD5");
-            instance.update(str.getBytes());
-            byte[] digest = instance.digest();
-            StringBuilder stringBuilder = new StringBuilder();
-            for (byte b : digest) {
-                stringBuilder.append(Integer.toHexString(b >> 4 & 15));
-                stringBuilder.append(Integer.toHexString(b & 15));
-            }
-            return stringBuilder.toString();
-        } catch (Exception e) {
-            return "Exception";
         }
     }
 

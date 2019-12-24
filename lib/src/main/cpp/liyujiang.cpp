@@ -299,9 +299,6 @@ std::string getDeviceJson(JNIEnv *env) {
     // 序列号（需要READ_PHONE_STATE权限，可能获取不到）
     std::string strSerial = getSerial(env);
     infoObj.Add("serial", strSerial);
-    // 应用名称
-    std::string strAppName = getAppName(env);
-    infoObj.Add("appName", strAppName);
     // 应用签名
     std::string strSignId = getAppSignature(env);
     std::string strMd5 = toMD5(strSignId);
@@ -362,13 +359,11 @@ jstring getDeviceInfoEncrypt(JNIEnv *env) {
     return env->NewStringUTF(cStr);
 }
 
-JNICALL void initial(JNIEnv *, jclass, jobject application) {
-    ensureInitial(application);
-}
-
 JNICALL jboolean verify(JNIEnv *env, jclass) {
     const char *charPackageName = getAppPackageName(env).c_str();
     if (strcmp(charPackageName, APP_PACKAGE_NAME) != 0) {
+        DEBUG("package name not equals %s", APP_PACKAGE_NAME);
+        authPass = JNI_FALSE;
         return JNI_FALSE;
     }
     const char *signature = getAppSignature(env).c_str();
@@ -424,7 +419,6 @@ JNICALL jboolean mergeFile(JNIEnv *env, jclass, jstring sourcePath, jobjectArray
 
 int registerNatives(JNIEnv *env) {
     JNINativeMethod registerMethods[] = {
-        //{"initial",       "(Landroid/app/Application;)",              (void *) initial},
         {"verify",        "()Z",                                      (jboolean *) verify},
         {"getDeviceInfo", "()Ljava/lang/String;",                     (jstring *) getDeviceInfo},
         {"getApiKey",     "()Ljava/lang/String;",                     (jstring *) getApiKey},

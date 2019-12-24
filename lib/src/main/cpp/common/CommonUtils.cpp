@@ -10,19 +10,6 @@
 #include "CommonUtils.h"
 #include "MD5.hpp"
 
-// 避免重复初始化
-static jboolean hasInit = JNI_FALSE;
-// 全局上下文
-static jobject appContext = nullptr;
-
-void ensureInitial(jobject application) {
-    if (hasInit) {
-        return;
-    }
-    appContext = application;
-    hasInit = JNI_TRUE;
-}
-
 int registerNativeMethods(JNIEnv *env, const char *className, JNINativeMethod *getMethods,
                           int methodsNum) {
     jclass clazz;
@@ -105,22 +92,9 @@ jstring str2jstring(JNIEnv *env, const char *pat) {
 }
 
 jstring md5(JNIEnv *env, jstring str) {
-    jclass findClass = env->FindClass(JNI_CLASS_PATH);
-    if (findClass == nullptr) {
-        return (env)->NewStringUTF("error");
-    }
-    jmethodID mid = env->GetStaticMethodID(findClass, "md5",
-                                           "(Ljava/lang/String;)Ljava/lang/String;");
-    if (mid == nullptr) {
-        return (env)->NewStringUTF("error");
-    }
-    jobject md5ByJava = env->CallStaticObjectMethod(findClass, mid, str);
-    DEBUG("md5ByJava=%s", jstring2str(env, (jstring) md5ByJava).c_str());
-
     std::string cStr = jstring2str(env, str);
     const char *pat = toMD5(cStr).c_str();
     jstring md5ByC = str2jstring(env, pat);
-    DEBUG("md5ByC=%s", pat);
     return md5ByC;
 }
 
@@ -164,9 +138,6 @@ std::string getSerial(JNIEnv *env) {
 }
 
 jobject getAppContext(JNIEnv *env) {
-    if (hasInit) {
-        return appContext;
-    }
     jclass activityThread = env->FindClass("android/app/ActivityThread");
     jmethodID currentActivityThread = env->GetStaticMethodID(activityThread,
                                                              "currentActivityThread",
@@ -175,16 +146,6 @@ jobject getAppContext(JNIEnv *env) {
     jmethodID getApplication = env->GetMethodID(activityThread, "getApplication",
                                                 "()Landroid/app/Application;");
     return env->CallObjectMethod(at, getApplication);
-}
-
-std::string getAppName(JNIEnv *env) {
-    jobject appContext = getAppContext(env);
-    jclass jniClass = env->FindClass(JNI_CLASS_PATH);
-    jmethodID jmiAppName = env->GetStaticMethodID(jniClass, "getAppName",
-                                                  "(Landroid/content/Context;)Ljava/lang/String;");
-    jobject appName = env->CallStaticObjectMethod(jniClass, jmiAppName, appContext);
-    std::string strAppName = jstring2str(env, (jstring) appName);
-    return strAppName;
 }
 
 std::string getAppPackageName(JNIEnv *env) {

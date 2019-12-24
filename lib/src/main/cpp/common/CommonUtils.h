@@ -10,8 +10,6 @@
 #include <jni.h>
 #include "../json/JSON.hpp"
 
-void ensureInitial(jobject application);
-
 int registerNativeMethods(JNIEnv *env, const char *className, JNINativeMethod *getMethods,
                           int methodsNum);
 
@@ -30,8 +28,6 @@ void executeCMD(const char *cmd, char *result, int expectResultSize);
 std::string getSerial(JNIEnv *env);
 
 jobject getAppContext(JNIEnv *env);
-
-std::string getAppName(JNIEnv *env);
 
 std::string getAppPackageName(JNIEnv *env);
 
