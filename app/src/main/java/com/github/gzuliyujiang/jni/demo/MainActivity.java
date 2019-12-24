@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
         boolean flag = JNISecurity.verify();
         Log.w(TAG, String.valueOf(flag));
         String key = JNISecurity.getApiKey();
-        Log.w(TAG, key);
+        Log.w(TAG, "API key: " + key);
         textView.setText(String.format("%s\n%s\n\n", flag, key));
         String result = JNISecurity.getDeviceInfo();
         textView.append(result);
